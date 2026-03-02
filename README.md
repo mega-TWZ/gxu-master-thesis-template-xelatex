@@ -1,7 +1,7 @@
 # 广西大学硕士毕业学位论文XeLaTex模板
 
 #### 介绍
-导入overleaf中, 要切换为XeLaTex 编译器.
+广西大学硕士毕业学位论文XeLaTex模板. 导入overleaf中, 要切换为XeLaTex 编译器.
 
 
 #### 打赏
