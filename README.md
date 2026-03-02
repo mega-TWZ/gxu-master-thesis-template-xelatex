@@ -1,4 +1,4 @@
-# 广西大学 硕士 毕业 学位论文 XeLaTex模板
+# 广西大学 硕士 毕业论文 LaTex模板--tangwenzi
 
 #### 介绍
 导入overleaf中, 要切换为 XeLaTex 编译器.
