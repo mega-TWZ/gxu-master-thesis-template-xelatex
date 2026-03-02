@@ -1,7 +1,7 @@
 # 广西大学 硕士 毕业论文 LaTex模板--tangwenzi
 
 ### 介绍
-导入overleaf中, 要切换为 XeLaTex 编译器.
+将文件夹"广西大学硕士论文模板" 导入overleaf中, 要切换为 XeLaTex 编译器.
 
 在main.tex里撰写论文, 建议将整个tex传入大模型, 去生成论文; 
 
