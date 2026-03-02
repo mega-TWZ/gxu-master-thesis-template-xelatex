@@ -1,0 +1,746 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%         overleaf 编译器要使用 XeLaTex           
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper, zihao=-4, twoside, fontset=fandol]{ctexart}
+\usepackage[colorlinks=true,linkcolor=black, citecolor=black]{hyperref}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{array} % 增强表格功能
+\usepackage{ulem}  % 提供可断行的下划线
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                        必要的小组件                           
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 强制段首缩进, 用\noindent取消
+\usepackage{indentfirst}
+\setlength{\parindent}{2em}
+% 目录一级标题增加引导符
+\usepackage[titles]{tocloft}
+\renewcommand\cftdotsep{1.5} % 点会非常密集
+\renewcommand\cftsecdotsep{\cftdotsep} % 保持 subsection 的点间距与主设置一致
+\renewcommand\cftsecleader{\cftdotfill{\cftsecdotsep}} % 也设置 subsubsection
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                          关于字体                               
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xeCJK}
+\usepackage{fontspec} 
+\newfontfamily\tnr{Times New Roman} %% 为英文字体设计别名
+% fontset=fandol，但Fandol 字体集中不包含隶书字体
+% 如果fontset选择其它，会编译超时。
+% 要自己提供li_shu.ttf, 在/myFontSet文件夹下，
+\IfFileExists{./myFontSet/li_shu.ttf}
+  {
+    % --- 字体文件存在 ---  加载隶书字体
+    \newCJKfontfamily\lishu{li_shu.ttf}[Path=./myFontSet/]
+    % 在日志中打印成功信息
+    \message{^^J*** 字体信息: 成功加载 'li_shu.ttf' (隶书). ***^^J}
+  }
+  {
+    % --- 字体文件不存在 --- 使用 'FandolSong' (宋体) 作为 \lishu 的备用字体
+    \newCJKfontfamily\lishu{FandolSong}
+    
+    % 在编译日志中打印警告信息 (^^J 是换行符)
+    \message{^^J*** 字体警告: 未在 './myFontSet/' 目录下找到 'li_shu.ttf'. ***^^J*** \lishu 命令将使用 'FandolSong' (Fandol的宋体) 替代. ***^^J}
+  }
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                     页面排版页边距                    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage[top=28mm, bottom=22mm, left=28mm,right=25mm]{geometry}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                        页眉设置                               
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{fancyhdr}  % 引入fancyhdr宏包, 设置页眉
+\pagestyle{fancy}  % 设置页面样式为fancy
+\setlength{\headheight}{31pt}
+\fancyhead[L]{\lishu 广西大学硕士学位论文}  % 页眉左上角内容
+\fancyhead[R]{\lishu\parbox[c]{6cm}{\centering 基于XeLaTeX编译的广西大学\\硕士毕业论文模板制作\\[4pt]}} % 页眉右上角内容
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                         页码                                 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 从中文摘要页开始编页码，页码置页面底部居中，以古罗马数字（Ⅰ、Ⅱ、Ⅲ）依次排序。
+% 学位论文从主体部分第一章开始另行编页码，页码置页面底部居中，以阿拉伯数字（1，2，3）排序。
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                     默认行间距设置                          
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{setspace}  % 控制行间距
+\setstretch{1.25}  % 全文1.25倍行间距
+% ex为当前字号下字母x的高度, em是宽度
+% 自行测试,当前字号下: 汉字高度 = 字母x的高度 *  2.15; 汉字宽度 = 字母x的宽度
+% 空一行 = 1.25 * 2.15 * 1ex = 2.68ex
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                        标题排版                              
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 五级及以上标题应用数字加圆括号“（1）”或字母。
+\ctexset{
+    secnumdepth = 4, % 对章节标题进行编号的层次数
+	section={
+        % 一级标题 三号 黑体 加粗 居中
+		format+ = \zihao{3} \heiti \textbf \centering,
+		% name 设置“章节编号数字”前后的词语, 用英文状态下","分开. 如果没有前或后词语可以不填
+		name = {第,章},
+		% number 设置“章节编号数字”的格式, 使数字为中文
+		number = \chinese{section},
+		% ex为当前字号下字母x的高度, em是宽度
+            % 自行测试,当前字号下: 汉字高度 = 字母x的高度 *  2.15; 汉字宽度 = 字母x的宽度
+            % 空一行 = 1.25 * 2.15 * 1ex
+		beforeskip = 2.68ex, % beforeskip 设置章节标题前的垂直间距
+		afterskip = 2.68ex, % afterskip 设置章节标题后的垂直间距
+		aftername = \hspace{1em} % aftername 控制编号和文字之间的格式，\hspace用于增加水平间距
+	},
+	subsection={
+        % 二级标题 四号 黑体 加粗 左顶格, 
+		format+ = \zihao{4} \heiti \textbf \raggedright,
+        name = {,},
+		% 设置“章节编号数字” 为“ 1.1”
+		number =\tnr\arabic{section}.\tnr\arabic{subsection},
+        % ex为当前字号下字母x的高度, em是宽度
+            % 空一行 = 1.25 * 2.15 * 1ex
+            % 空0.5行
+		beforeskip = 1.34ex,
+		afterskip = 1.34ex,
+		aftername = \hspace{1em}
+	},
+	subsubsection={
+        % 三级标题 小四 黑体 加粗 左顶格
+		format+ = \zihao{-4} \heiti \textbf \raggedright,
+        name = {,},
+		number = \tnr\arabic{section}.\tnr\arabic{subsection}.\tnr\arabic{subsubsection},
+		beforeskip = 0ex,
+		afterskip = 0ex,
+		aftername = \hspace{1em}
+	},
+    paragraph={
+        % 四级标题 小四 宋体 左顶格 不加粗
+		format += \zihao{-4} \songti \raggedright,
+        name = {,},
+		number =\mdseries\tnr\arabic{section}.\tnr\arabic{subsection}.\tnr\arabic{subsubsection}.\tnr\arabic{paragraph},
+		beforeskip = 0ex,
+		afterskip = 0ex,
+		aftername = \hspace{1em},
+        % runin=false，标题文字会独占一行，然后正文从下一行开始。
+        runin = false,
+    },
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                       目录设置                               
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ctexset{
+    tocdepth = 4, % 只显示4层
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                       文献引用                               
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{appendix}
+\usepackage[sort&compress]{gbt7714}% sort: 排序， compress：当多篇引用序号连续时，进行压缩显示。
+\citestyle{numbers}
+
+
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 0.  LaTex 简明使用规范                      
+{% 花括号 " {} " 限制作用域, 保持习惯,明确作用域范围
+% 命令 " \*** " 在作用域内生效
+% 注意 " \***{...}" 只是向命令传入参数"..."
+% 注意 " \***[--]{...}" 给命令加入选项"--", 并传入参数"..."
+% 区分 " {\***}"
+% 环境: begin{***}-end{***}, 预设, 不可自定义?, 相当与一个作用域.
+% 空格"\ ", 换行"\\", 空一行推荐使用" 回车 \mbox{} 回车 "
+% 固定"环境"的插入位置 "\begin{***}[htbp]-end ",  "[htbp]"适用于图片表格.
+% 建议: 阅读源码时折叠{}, 可惜overleaf不提供折叠快捷键, 
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1. 封面页
+{
+\begin{titlepage}
+
+    % 封面页没有页眉和页脚
+    \thispagestyle{empty} 
+
+    % 使用 TikZ 实现 "书脊文本"
+    \begin{tikzpicture}[remember picture, overlay]
+        \node at ([xshift=14mm, yshift=148mm] current page.south west) {
+           \fbox{%广西大学硕士毕业学位论文模板制作
+                \begin{minipage}[][26cm][c]{1.1cm}  % s参数用于两端对齐(左右)
+                    \centering% 三号 宋体 加粗
+                    \zihao{3}\textbf{硕士\vfill \vfill 广西大学硕士毕业学位论文模板制作\vfill}
+                    % 三号 加粗，使用Times New Roman
+                    \zihao{3}\textbf{2024}
+                \end{minipage}
+            }
+        };
+    \end{tikzpicture}
+
+    % 使用 TikZ 实现  "论文类型"
+    \begin{tikzpicture}[remember picture, overlay]
+        \node at ([xshift=16.39cm, yshift=23.8cm] current page.south west) {
+           \fbox{
+                \begin{minipage}[][1.6cm][c]{3.1cm}  % s参数用于两端对齐(左右)
+                    \centering
+                    \zihao{3} \lishu \textbf{% 三号 隶书 加粗
+                    硕士专业\\
+                    学位论文}
+                \end{minipage}
+            }
+        };
+    \end{tikzpicture}
+    
+
+
+    % 中文标题: 居中，加粗，宋体/times, 一号
+    {
+        \vspace{4.797cm}
+        \centering
+        \zihao{1}
+        \bfseries
+        基于XeLaTex编译器的广西大学硕士学位论文模板
+        \par % 添加段落结束标志
+    }
+
+    % 作者：居中，加粗, 宋体, 一号
+    {
+        \vspace{5cm}
+        \centering
+        \zihao{1}
+        \bfseries
+        唐宋元
+        \par % 添加段落结束标志
+    }
+
+    % 图标:
+    {
+        \vspace{2.5cm}
+        \begin{figure}[htbp]
+            \centering
+            \includegraphics[width=5.6cm]{GXU.png}
+        \end{figure}
+    }
+
+    % 日期：居中，加粗，宋体, 小二
+    {
+        \centering
+        \zihao{-2}
+        \textbf{二\tikz[baseline=-0.7ex]\draw[line width=0.3mm] (0,0) circle (0.8ex);二四\ 年\ 三\ 月}
+        \par % 添加段落结束标志
+    }
+
+\end{titlepage}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2. 扉页
+{
+\newpage
+\thispagestyle{empty}  % 移除页眉和页脚
+
+% 分类号:
+\begin{table}[htbp]
+    \centering
+    \tnr\zihao{-3} % 注意字体 Times New Roman 小三号
+    \begin{tabular}{        
+            l                                   % 左对齐
+            @{}                                 % 取消列间隔
+            >{\centering\arraybackslash}p{4cm}  % 居中对齐
+            @{\hspace{1.6cm}}                     % 列间距
+            l                                   % 左对齐
+            @{}                                 % 取消列间隔
+            >{\centering\arraybackslash}p{4cm}  % 居中对齐
+        }
+        分类号\uline\hfill & \uline{\hfill TP391\hfill}  & 学校代码\uline\hfill & \uline{\hfill 10593\hfill} \\
+        密级\uline\hfill & \uline{\hfill 普通\hfill}  & 学号\uline\hfill & \uline{\hfill ?????????\hfill} \\
+    \end{tabular}
+\end{table}
+
+% 论文类型：居中，加粗，隶书 二号
+{
+    \vspace{2cm}
+    \centering
+    \lishu
+    \zihao{2}
+    \textbf{硕士专业学位论文}
+    \par % 添加段落结束标志
+}
+
+% 中文标题：居中，加粗, 宋体/times 小一
+{
+    \vspace{0.7cm}
+    \centering
+    \zihao{-1}
+    \textbf{基于XeLaTeX排版的广西大学硕士毕业学位论文模板制作}
+    \par % 添加段落结束标志
+}
+
+% 英文标题：居中，加粗, Times New Roman字体，二号
+{
+    \vspace{0.7cm}
+    \centering
+    \tnr
+    \zihao{2}
+    \textbf{RESEARCH ON WIND POWER FORECASTING METHOD BASED ON INDIRECT METHOD}
+    \par % 添加段落结束标志
+}
+
+% 学生信息
+{
+\vspace{2cm}
+\begin{table}[htbp]
+    \centering
+    \zihao{-3}\bfseries %宋体/times 小三 加粗
+    \begin{tabular}{lc}
+         作者姓名：& \uline{\hfill 唐宋元 \hfill}\\
+         指导教师：& \uline{\hfill 陈燕 \hfill}\\
+         合作导师：& \uline{\hfill 无 \hfill}\\
+         专业名称：& \uline{\hfill 计算机科学与技术 \hfill}\\
+         研究方向：& \uline{\hfill LaTeX排版 \hfill}\\
+         所在学院：& \uline{\hfill 计算机与电子信息 \hfill}\\
+    \end{tabular}
+\end{table}
+}
+
+% 答辩信息
+{
+\vspace{2cm}
+\begin{table}[htbp]
+    \centering
+    \zihao{-3}\bfseries %宋体/times 小三 加粗
+    \begin{tabular}{
+            l                                   % 左对齐
+            @{}                                 % 取消列间隔
+            >{\centering\arraybackslash}p{3.5cm}  % 居中对齐
+            @{\hspace{1cm}}                     % 列间距
+            l                                   % 左对齐
+            @{}                                 % 取消列间隔
+            >{\centering\arraybackslash}p{3.5cm}  % 居中对齐
+    }
+        论文答辩日期 & \uline{\hfill 2024.5.31 \hfill} & 学位授予日期 & \uline{\hfill 2024.6.31 \hfill} \\
+        答辩委员会主席 & \uline{\hfill} &  & \\
+    \end{tabular}
+\end{table}
+}
+
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 3. 版权页
+{
+    \newpage
+    \thispagestyle{empty}  % 移除页眉和页脚
+    \begin{spacing}{1.5} %当前页行间距为1.5
+        % 版权标题：居中，加粗, 黑体，三号
+        {
+            \centering
+            \heiti
+            \zihao{3}
+            \bfseries 
+            
+            \mbox{}
+            
+            广西大学学位论文原创性和使用授权声明
+            
+            \mbox{}
+            
+            \par % 添加段落结束标志
+        }
+    
+        
+        % 版权正文: 宋体，四号
+        {
+            \songti
+            \zihao{4}
+            \raggedright
+            
+            \mbox{} 
+            
+            \quad\quad 本人声明所呈交的论文，是本人在导师的指导下独立进行研究所取得的研究成果。除已特别加以标注和致谢的地方外，论文不包含任何其他个人或集体已经发表或撰写的研究成果，也不包含本人或他人为获得广西大学或其它单位的学位而使用过的材料。与我一同工作的同事对本论文的研究工作所做的贡献均已在论文中作了明确说明。
+            
+            \quad\quad 本人在导师指导下所完成的学位论文及相关的职务作品，知识产权归属广西大学。本人授权广西大学拥有学位论文的部分使用权，即：学校有权保存并向国家有关部门或机构送交学位论文的复印件和电子版，允许论文被查阅和借阅，可以将学位论文的全部或部分内容编入有关数据库进行检索和传播，可以采用影印、缩印或其它复制手段保存、汇编学位论文。
+            
+            \quad\quad 本学位论文属于：
+        
+            \quad\quad\quad\quad \tikz[baseline=0ex]\draw[line width=0.3mm] rectangle (1.5ex, 1.5ex);保密，在\quad\quad 年解密后适用授权。
+            
+            \quad\quad\quad\quad \tikz[baseline=0ex]\draw[line width=0.3mm] rectangle (1.5ex, 1.5ex);不保密。
+            
+            \quad\quad\quad\quad (请在以上相应方框内打“√”)
+        
+            \mbox{}
+        
+            \quad\quad 论文作者签名：\quad\quad\quad\quad\quad\quad\quad\quad 日期： 
+            
+            \quad\quad 指导教师签名：\quad\quad\quad\quad\quad\quad\quad\quad 日期：
+            
+            \quad\quad 作者联系电话：\quad\quad\quad\quad\quad\quad\quad\quad 电子邮箱：
+            
+            \par % 添加段落结束标志
+        }
+
+    \end{spacing}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 4. 中文摘要页
+{
+    \newpage
+    \thispagestyle{plain}  % 移除页眉, 保留页脚
+    \phantomsection\addcontentsline{toc}{section}{摘要} % 加入目录 
+    
+    \setcounter{page}{1}  % 从中文摘要页开始编页码，页码置页面底部居中，以古罗马数字（Ⅰ、Ⅱ、Ⅲ）依次排序。
+    \pagenumbering{Roman}
+    
+    
+    % 中文标题：居中，加粗, 黑体, 三号
+    {
+        \heiti
+        \zihao{3}
+        \centering
+        \bfseries
+    
+        基于间接方法的中长期风功率预测方法研究
+    
+        \mbox{}
+    
+        \par % 添加段落结束标志
+    }
+    
+    % 摘 要：居中，两字间间隔一个空格，黑体 三号 加粗
+    {    
+        \heiti
+        \zihao{3}
+        \bfseries
+        \centering
+        摘\ 要
+    
+        \mbox{}
+    
+        \par % 添加段落结束标志
+    }
+    
+    % 摘要内容：宋体 四号, 硕士论文500-800字为宜
+    {
+        \songti
+        \zihao{4}
+        \raggedright
+        \quad\quad 首先要认真学习马克思主义理论，这是我们做好一切工作的看家本领，也是领导干部必须普遍掌握的工作制胜的看家本领。毛泽东同志曾经提出，“如果我们党有一百个至二百个系统地而不是零碎地、实际地而不是空洞地学会了马克思列宁主义的同志，就会大大地提高我们党的战斗力量”。这个任务，今天依然很现实地摆在我们党面前。只有学懂了马克思列宁主义、毛泽东思想、邓小平理论、“三个代表”重要思想、科学发展观，特别是领会了贯穿其中的马克思主义立场、观点、方法，才能心明眼亮，才能深刻认识和准确把握共产党执政规律、社会主义建设规律、人类社会发展规律，才能始终坚定理想信念，才能在纷繁复杂的形势下坚持科学指导思想和正确前进方向，才能带领人民走对路，才能把中国特色社会主义不断推向前进。
+    
+        \mbox{}
+    
+        \par % 添加段落结束标志
+    }
+    
+    % 关键词: 四号, 黑体，，3-8个词为宜，用2个空格键间隔，末尾无符号
+    {
+        \zihao{4}
+        \raggedright
+        {\heiti\textbf{关键词：}}
+        马克思主义理论\quad 中国共产党\quad 中国特色社会主义
+
+        \par % 添加段落结束标志
+    }
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 5. 英文摘要页
+{
+    \newpage
+    \thispagestyle{plain}  % 移除页眉, 保留页脚
+    \phantomsection\addcontentsline{toc}{section}{ABSTRACT} % 加入目录
+    
+    % 英文标题：Times New Roman, 居中，全部大写字母。每行左右两边至少留五个字符空格。
+    {
+        \centering
+        \begin{minipage}{\dimexpr\textwidth-9em} % 减去左右总共8em宽度
+            \tnr
+            \zihao{3}
+            \centering
+            \textbf{RESEARCH ON WIND POWER FORECASTING METHOD BASED ON INDIRECT METHOD}
+        \end{minipage}
+        \par % 添加段落结束标志
+        \vspace{45pt}
+    }
+    
+    % 摘 要：居中 Times New Roman 三号 加粗
+    {
+        \centering
+        \tnr
+        \zihao{3}
+        \textbf{ABSTRACT}
+        
+        \mbox{}
+    
+        \par % 添加段落结束标志
+    }
+    
+    
+    % 摘要内容：Times New Roman 5号
+    {   
+        \raggedright
+        \tnr
+        \zihao{5}
+        \quad\quad With the depletion of traditional energy sources, new clean energy has become a research hot spot. As a clean and abundant energy source, wind energy has attracted much attention, and wind power generation has become the main form in China. However, the instability of wind seriously affects the grid integration of wind power and brings challenges to power dispatch. Accurate wind power forecasts are essential to address this challenge and can help improve economic efficiency. However, indirect methods for medium- and long-term wind power prediction have been less studied. Therefore, this paper thoroughly investigates the implementation of indirect methods for medium- and long-term wind power prediction, explores the key technical issues involved, and proposes corresponding solutions. The main research work is as follows:
+                
+        \mbox{}
+                
+        \mbox{}
+
+        \par % 添加段落结束标志
+    }
+    
+    % 关键词: Times New Roman, 四号, 用";"间隔，末尾无符号
+    {
+        \raggedright
+        \tnr
+        \zihao{4}
+        \textbf{KEY WORDS: }
+        Wind Power; Time-series Forecasting; Deep Learning
+
+        \par % 添加段落结束标志
+    }
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 6. 目录页
+{
+    \newpage
+    \thispagestyle{plain}  % 移除页眉, 保留页脚
+     
+    {
+        % “目录”两字中间间隔一个空格，三号黑体，加粗，段前后空1行（
+        \renewcommand{\contentsname}{\heiti\zihao{3}\textbf{\\ 目\ 录}}
+        \centering
+        \tableofcontents  % 二级标题目录左缩进 2字符，三级节标题目录左缩进4字符。
+        \par % 添加段落结束标志
+    }
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 7. 论文主体部分
+{
+\newpage
+% 保留页眉, 保留页脚
+\setcounter{page}{1}  % 从主体部分开始另行编页码，页码底部居中，以阿拉伯数字排序。
+\pagenumbering{arabic} 
+\songti
+\zihao{-4}
+
+\section{绪论}
+\subsection{研究背景及意义}
+随着全球能源结构的转型和低碳经济的发展，风能作为一种清洁\cite{what_is_system-1}、可再生的能源，在能源领域中的地位日益凸显。风力发电作为风能利用的主要形式，在电力系统中的占比逐年上升。然而，风的随机性和间歇性给风电的并网运行带来了极大的挑战。因此，准确预测风功率对于优化风电场运行、提高电力系统的稳定性具有重要意义。
+
+\subsection{超链接颜色导言区修改}
+随着全球能源结构的转型和低碳经济的发展，风能作为一种\cite{cleaning_task}清洁、可再生的能源，
+
+{ %%% 字体 test
+\begin{flushleft}
+    \noindent  %\indent是缩进, \noindent是不缩
+    {\fangsong 中文字体（仿宋)}  \\ 
+    {\songti 中文字体（宋体）}     \\ 
+    {中文字体 (ctex默认中文宋体)}    \\
+    {\lishu 中文字体(隶书)}       \\ 
+    {\heiti 中文字体（黑体)}         \\
+    {\tnr helloworld (Times New Roman)}\\
+    {\songti helloworld (设置的西文默认字体)}\\
+    \leavevmode \\
+    {\bfseries 加粗\ 空\ 格\ \mdseries 正常\\换行}  \\
+    {\textbf{另一种加粗, 以传参形式}}
+\end{flushleft}
+}
+
+
+{ %%% 字号 test
+\begin{flushleft} % test
+    \noindent
+    \heiti 
+    {\zihao{0} 字号 0号}\\
+    {\zihao{1} 字号 一号}\\
+    {\zihao{-1} 字号小一}\\
+    {\zihao{2} 字号二号 }\\
+    {\zihao{-2} 字号 小二}\\
+    {\zihao{3} 字号 三号}\\
+    {\zihao{-3} 字号小三}\\
+    {\zihao{4} 字号 四号}\\
+    {\zihao{-4} 字号 小四}\\
+    {默认字号}\\
+\end{flushleft}
+}
+
+\subsubsection{风功率预测的研究现状}
+随着全球能源结构的转型和低碳经济的发展，风能作为一种清洁、可再生的能源，在能源领域中的地位日益凸显。风力发电作为风能利用的主要形式，在电力系统中的占比逐年上升。然而，风\cite{what_is_system-2}的随机性和间歇性给风电的并网运行带来了极大的挑战。因此，准确预测风功率对于优化风电场运行、提高电力系统的稳定性具有重要意义。
+
+\paragraph{风电异常数据识别研究现状}
+随着全球能源结构的转型和低碳经济的发展，风能作为一种清洁、可再生的能源，在能源领域\cite{吴大任1979微分几何讲义}中的地位日益凸显。风力发电作为风能利用的主要形式，在电力系统中的占比逐年上升。然而，风的随机性和间歇性给风电的并网运行带来了极大的挑战。因此，准确预测风功率对于优化风电场运行、提高电力系统的稳定性具有重要意义。
+
+(1) 风速预测的研究现状
+随着全球能源结构的转型和低碳经济的发展，风能作为一种清洁、可再生的能源，在能源领域中的地位日益凸显。
+
+\subsection{主要研究内容及创新性}
+随着全球能源结构的转型和低碳经济的发展，风能作为一种清洁、可再生的能源，在能源领域中的地位日益凸显.
+
+\subsection{论文组织架构}
+随着全球能源结构的转型和低碳经济的发展，风能作为一种清洁、可再生的能源，在能源领域中的地位日益凸显。风力发电作为风能利用的主要形式，在电力系统中的占比逐年上升。然而，风的随机性和间歇性给风电的并网运行带来了极大的挑战。因此，准确预测风功率对于优化风电场运行、提高电力系统的稳定性具有重要意义。
+
+
+\section{总结与展望}
+\subsection{总结}
+
+\[\begin{array}{rcrcrcrcr}\mathcal{R}(\mathbf{s}_i,\mathbf{a})&=&\mathcal{R}(\mathbf{s}_j,\mathbf{a})&\forall\mathbf{a}\in\mathcal{A},\\\mathcal{P}(G|\mathbf{s}_i,\mathbf{a})&=&\mathcal{P}(G|\mathbf{s}_j,\mathbf{a})&\forall\mathbf{a}\in\mathcal{A},&\forall G\in\mathcal{S}_B,\tag{1}\end{array}\]
+
+\subsubsection{随着全球能源结构的转型和低碳经济的发展}
+\[\mathcal{R}_s^\pi:=\sum_a\pi(a|s)\mathcal{R}(s,a),\qquad\mathcal{P}_{s}^{\pi}(C):=\sum_{a}\pi(a|s)\sum_{s'\in C}P(s,a)(s')\tag{2}\]
+\paragraph{风能}
+
+\begin{table*}[htbp]
+\centering
+\begin{tabular}{cccccc}
+            \toprule
+            Method& Metric& \multicolumn{4}{c}{Window Size} \\
+            & & 3 & 5 & 9 & 17 \\
+            \midrule
+            FO& MAE & \multicolumn{4}{c}{3.423 ± 0.119} \\
+            & MSE & \multicolumn{4}{c}{0.267 ± 0.029} \\
+            \midrule
+            FW-1& MAE & \textbf{3.036 ± 0.157}& 3.191 ± 0.141& 3.261 ± 0.239& 3.255 ± 0.116\\
+            & MSE & \textbf{0.211 ± 0.023}& 0.238 ± 0.030& 0.259 ± 0.049& 0.257 ± 0.014\\
+            \midrule
+            FW-2& MAE & 5.690 ± 0.469& 5.631 ± 0.267& 5.767 ± 0.417& \textbf{5.189 ± 0.087}\\
+            & MSE & 0.856 ± 0.196& 0.801 ± 0.093& 0.905 ± 0.172& \textbf{0.701 ± 0.046}\\
+            \bottomrule
+        \end{tabular}
+
+\caption{Comparison with different forecasting paradigm.(Metric scaled up 100)}
+\end{table*}
+
+
+\subsection{展望}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=10cm]{GXU.png}
+\end{figure}
+
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 8. 参考文献
+{
+    \newpage
+    \phantomsection\addcontentsline{toc}{section}{ 参考文献}
+    
+    \bibliographystyle{gbt7714-numerical}   % 使用顺序编码制
+    \bibliography{ref}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 9. 附 录
+{
+    \newpage
+    \phantomsection\addcontentsline{toc}{section}{附录}
+
+    % 附录标题：居中，加粗, 黑体, 三号
+    {
+        \centering
+        \heiti
+        \zihao{3}
+        \textbf{\\ 附\ 录 \\\mbox{}\\ }
+        \par % 添加段落结束标志
+    }
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 10. 研究成果清单
+{
+\newpage
+    \phantomsection\addcontentsline{toc}{section}{攻读学位期间取得成果情况}
+
+    % 研究成果清单标题：居中，加粗, 黑体, 三号
+    {
+        \centering
+        \heiti
+        \zihao{3}
+        \textbf{\\ 攻读学位期间发表论文与研究成果清单 \\\mbox{}\\ }
+        \par % 添加段落结束标志
+    }
+
+    % 清单正文 
+    { 
+        \raggedright
+        %宋体 小四（英文用 Times New Roman), 学术论文书写格式同参考文献。
+        1.~在ABCD期刊（IF 9.0）发表SCI论文1篇，中科院分区：一区Top，第一作者。
+        
+        2.~在AAAA DDD期刊（IF 11.2）在投SCI论文1篇，中科院分区：一区Top，第一作者。
+        \par % 添加段落结束标志
+    }
+
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 11. 致 谢
+{
+    \newpage
+    \phantomsection\addcontentsline{toc}{section}{致谢}
+
+    % 致谢标题：居中，加粗, 黑体, 三号
+    {
+        \centering
+        \heiti
+        \zihao{3}
+        \textbf{\\ 致\ 谢 \\\mbox{}\\ }
+        \par % 添加段落结束标志
+    }
+    
+
+    % 致谢正文 仿宋 小四
+    {
+        \raggedright
+        \fangsong\zihao{-4}
+        
+        \quad\quad 时光荏苒，十几年的漫漫求学路即将告一段落，回首这段路程，有挑战苦难的艰辛，有克服困难时收货的成就感，有压力，也有动力，有良师亦有益友，更有亲人的鼎力支持。
+    
+        \quad\quad 首先，感谢恩师xx教授的倾囊相授、谆谆教诲，在我找不到研究方向的时候为我的研究指明方向，在我迷茫的时候为我指点迷津和无数个为我修改论文的日夜。
+        感谢在我三年研究生生涯中给予过我帮助的其他老师xxx，xxx，xxx，xxx，因为你们的无私奉献才有我今天的成绩。
+
+        \quad\quad 其次，感谢我的父母无条件地支持我对学术的热爱和对学习的渴望，尊重我的选择，无条件信任我，让我有自己选择的权利，自我压力大的时候开导我。同时，也感谢我的伴侣xxx对我的支持我鼓励，在我压力大、情绪低落的时候开导我，总是以积极乐观的心态指引我，对我的学习和研究全力支持，在我遇到困难的时候尽力为我提供帮助，为我提供情绪价值的同时也提供了生活上的帮助。
+    
+        \quad\quad 最后，感谢师门的同学们在我遇到困难时给予我的帮助，也感谢对我研究过程当中提出的宝贵建议。
+        
+        \par % 添加段落结束标志
+    }
+
+}
+\end{document}
